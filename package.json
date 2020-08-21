@@ -1,0 +1,25 @@
+{
+  "name": "vue-state-store-devtools",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "clean": "rm -rf ./dist/*.*",
+    "lint": "prettier --write ./src/**/*.{ts}"
+  },
+  "main": "./dist/index.js",
+  "type": "./dist/index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "flatted": "^3.0.4",
+    "jsondiffpatch": "^0.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.6.0",
+    "prettier": "^2.0.5",
+    "vue-state-store": "*"
+  }
+}

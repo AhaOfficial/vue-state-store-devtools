@@ -1,6 +1,9 @@
 import { IStore } from 'vue-state-store'
 import { Operational } from './diff'
 import * as Flatted from 'flatted'
+
+import Vue from 'vue'
+import Vuex from 'vuex'
 declare var window: any
 
 /**
@@ -45,15 +48,22 @@ export const devtoolsInit = async (
   if (devtoolsVuexStore) return
   if (!devtoolsHook) return
 
+  // For using vue obserber in vuex
+  Vue.use(Vuex)
+
   isTryingInit = true
 
-  const Vuex = await importVuex()
-  if (!Vuex) {
-    if (option.enableToastMessage && target.__VUE_DEVTOOLS_TOAST__)
-      target.__VUE_DEVTOOLS_TOAST__('[Vue-State-Store] Failed to import Vuex .')
-    isTryingInit = false
-    return
-  }
+  try {
+    if (!Vuex
+      || typeof Vuex['version'] === 'undefined'
+      || typeof Vuex['install'] === 'undefined'
+    ) {
+      if (option.enableToastMessage && target.__VUE_DEVTOOLS_TOAST__)
+        target.__VUE_DEVTOOLS_TOAST__('[Vue-State-Store] Failed to import Vuex .')
+      isTryingInit = false
+      return
+    }
+  } catch (e) { }
 
   devtoolsVuexStore = new Vuex.Store({ strict: false })
   target.devtoolsVuexStore = devtoolsVuexStore
@@ -89,7 +99,7 @@ export const devtoolsBind = async <T>(store: IStore<T>, storeName: string) => {
   if (!devtoolsVuexStore) return
 
   if (typeof devtoolsStoreMap[storeName] !== 'undefined') {
-    console.warn('vue-state-store can track only one object value initially registered if the state store name is the same.')
+    console.warn('Vue-State-Store can track only one object value initially registered if the state store name is the same.')
     return
   }
   devtoolsStoreMap[storeName] = store
@@ -161,18 +171,6 @@ export const devtoolsBind = async <T>(store: IStore<T>, storeName: string) => {
 }
 
 /**
- * Import only if an external module is present.
- */
-const importVuex = async () => {
-  let Vuex: any = undefined
-  try {
-    // @ts-ignore
-    Vuex = await import('vuex')
-  } catch (e) { }
-  return Vuex
-}
-
-/**
  * Insert the store into the Devtool.
  */
 const injectStore = (store) => {
@@ -195,7 +193,6 @@ const injectStore = (store) => {
       if (typeof path === 'string') path = [path]
       hook.storeModules.push({ path, module, options })
       origRegister(path, module, options)
-      if (process.env.NODE_ENV !== 'production') console.log('early register module', path, module, options)
     }
     origUnregister = store.unregisterModule.bind(store)
     store.unregisterModule = (path) => {
@@ -204,7 +201,6 @@ const injectStore = (store) => {
       const index = hook.storeModules.findIndex(m => m.path.join('/') === key)
       if (index !== -1) hook.storeModules.splice(index, 1)
       origUnregister(path)
-      if (process.env.NODE_ENV !== 'production') console.log('early unregister module', path)
     }
   }
   hook.flushStoreModules = () => {

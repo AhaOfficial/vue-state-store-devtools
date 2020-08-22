@@ -42,9 +42,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 exports.__esModule = true;
 var diff_1 = require("./diff");
 var Flatted = __importStar(require("flatted"));
+var vue_1 = __importDefault(require("vue"));
+var vuex_1 = __importDefault(require("vuex"));
 /**
  * Processing points for nuxt
  */
@@ -77,7 +82,7 @@ exports.devtoolsInit = function (option) {
         enableToastMessage: true
     }; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var Vuex, _i, initAfterRegisterQueue_1, initAfterRegisterItem;
+        var _i, initAfterRegisterQueue_1, initAfterRegisterItem;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -85,34 +90,38 @@ exports.devtoolsInit = function (option) {
                         return [2 /*return*/];
                     if (!devtoolsHook)
                         return [2 /*return*/];
+                    // For using vue obserber in vuex
+                    vue_1["default"].use(vuex_1["default"]);
                     isTryingInit = true;
-                    return [4 /*yield*/, importVuex()];
-                case 1:
-                    Vuex = _a.sent();
-                    if (!Vuex) {
-                        if (option.enableToastMessage && target.__VUE_DEVTOOLS_TOAST__)
-                            target.__VUE_DEVTOOLS_TOAST__('[Vue-State-Store] Failed to import Vuex .');
-                        isTryingInit = false;
-                        return [2 /*return*/];
+                    try {
+                        if (!vuex_1["default"]
+                            || typeof vuex_1["default"]['version'] === 'undefined'
+                            || typeof vuex_1["default"]['install'] === 'undefined') {
+                            if (option.enableToastMessage && target.__VUE_DEVTOOLS_TOAST__)
+                                target.__VUE_DEVTOOLS_TOAST__('[Vue-State-Store] Failed to import Vuex .');
+                            isTryingInit = false;
+                            return [2 /*return*/];
+                        }
                     }
-                    exports.devtoolsVuexStore = new Vuex.Store({ strict: false });
+                    catch (e) { }
+                    exports.devtoolsVuexStore = new vuex_1["default"].Store({ strict: false });
                     target.devtoolsVuexStore = exports.devtoolsVuexStore;
                     injectStore(exports.devtoolsVuexStore);
                     if (option.enableToastMessage && target.__VUE_DEVTOOLS_TOAST__)
                         target.__VUE_DEVTOOLS_TOAST__('Enabled Vue-State-Store');
                     _i = 0, initAfterRegisterQueue_1 = initAfterRegisterQueue;
-                    _a.label = 2;
-                case 2:
-                    if (!(_i < initAfterRegisterQueue_1.length)) return [3 /*break*/, 5];
+                    _a.label = 1;
+                case 1:
+                    if (!(_i < initAfterRegisterQueue_1.length)) return [3 /*break*/, 4];
                     initAfterRegisterItem = initAfterRegisterQueue_1[_i];
                     return [4 /*yield*/, exports.devtoolsBind(initAfterRegisterItem[0], initAfterRegisterItem[1])];
-                case 3:
+                case 2:
                     _a.sent();
-                    _a.label = 4;
-                case 4:
+                    _a.label = 3;
+                case 3:
                     _i++;
-                    return [3 /*break*/, 2];
-                case 5:
+                    return [3 /*break*/, 1];
+                case 4:
                     initAfterRegisterQueue = [];
                     isTryingInit = false;
                     return [2 /*return*/];
@@ -147,7 +156,7 @@ exports.devtoolsBind = function (store, storeName) { return __awaiter(void 0, vo
                 if (!exports.devtoolsVuexStore)
                     return [2 /*return*/];
                 if (typeof devtoolsStoreMap[storeName] !== 'undefined') {
-                    console.warn('vue-state-store can track only one object value initially registered if the state store name is the same.');
+                    console.warn('Vue-State-Store can track only one object value initially registered if the state store name is the same.');
                     return [2 /*return*/];
                 }
                 devtoolsStoreMap[storeName] = store;
@@ -212,30 +221,6 @@ exports.devtoolsBind = function (store, storeName) { return __awaiter(void 0, vo
     });
 }); };
 /**
- * Import only if an external module is present.
- */
-var importVuex = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var Vuex, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                Vuex = undefined;
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require('vuex')); })];
-            case 2:
-                // @ts-ignore
-                Vuex = _a.sent();
-                return [3 /*break*/, 4];
-            case 3:
-                e_1 = _a.sent();
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/, Vuex];
-        }
-    });
-}); };
-/**
  * Insert the store into the Devtool.
  */
 var injectStore = function (store) {
@@ -258,8 +243,6 @@ var injectStore = function (store) {
                 path = [path];
             hook.storeModules.push({ path: path, module: module, options: options });
             origRegister(path, module, options);
-            if (process.env.NODE_ENV !== 'production')
-                console.log('early register module', path, module, options);
         };
         origUnregister = store.unregisterModule.bind(store);
         store.unregisterModule = function (path) {
@@ -270,8 +253,6 @@ var injectStore = function (store) {
             if (index !== -1)
                 hook.storeModules.splice(index, 1);
             origUnregister(path);
-            if (process.env.NODE_ENV !== 'production')
-                console.log('early unregister module', path);
         };
     }
     hook.flushStoreModules = function () {

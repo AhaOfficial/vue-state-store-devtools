@@ -98,10 +98,9 @@ export const devtoolsBind = async <T>(store: IStore<T>, storeName: string) => {
   if (!devtoolsVuexStore) await devtoolsInit()
   if (!devtoolsVuexStore) return
 
-  if (typeof devtoolsStoreMap[storeName] !== 'undefined') {
-    console.warn('Vue-State-Store can track only one object value initially registered if the state store name is the same.')
-    return
-  }
+  if (typeof devtoolsStoreMap[storeName] !== 'undefined')
+    console.warn('If the state store names are the same, Vue-State-Store can only track one last registered object value.')
+
   devtoolsStoreMap[storeName] = store
 
   // Dynamically register the created store.

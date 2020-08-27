@@ -155,10 +155,8 @@ exports.devtoolsBind = function (store, storeName) { return __awaiter(void 0, vo
             case 2:
                 if (!exports.devtoolsVuexStore)
                     return [2 /*return*/];
-                if (typeof exports.devtoolsStoreMap[storeName] !== 'undefined') {
-                    console.warn('Vue-State-Store can track only one object value initially registered if the state store name is the same.');
-                    return [2 /*return*/];
-                }
+                if (typeof exports.devtoolsStoreMap[storeName] !== 'undefined')
+                    console.warn('If the state store names are the same, Vue-State-Store can only track one last registered object value.');
                 exports.devtoolsStoreMap[storeName] = store;
                 moduleInstance = {
                     namespaced: true,

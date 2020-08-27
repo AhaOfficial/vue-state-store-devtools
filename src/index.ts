@@ -79,7 +79,7 @@ export const devtoolsInit = async (
   isTryingInit = false
 }
 
-const devtoolsStoreMap: {
+export const devtoolsStoreMap: {
   [storeName in string]: IStore<any>
 } = {}
 

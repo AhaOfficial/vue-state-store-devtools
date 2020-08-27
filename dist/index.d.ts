@@ -15,6 +15,9 @@ interface IDevtoolsOption {
  * @param option IDevtoolsOption
  */
 export declare const devtoolsInit: (option?: IDevtoolsOption) => Promise<void>;
+export declare const devtoolsStoreMap: {
+    [storeName in string]: IStore<any>;
+};
 /**
  * Connect the vue-state-store
  * to the vuex store.
